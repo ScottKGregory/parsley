@@ -1,0 +1,15 @@
+// Package nodes provides implementation and interfaces for the various supported node types
+//
+//go:generate go tool ridicule -header -in ./nodes.go
+package nodes
+
+// NodeOp defines the basic capabilities of all operations
+type NodeOp interface {
+	String() string
+}
+
+// Node defines the basic capabilities of all nodes
+type Node interface {
+	Eval() (any, error)
+	String() string
+}
