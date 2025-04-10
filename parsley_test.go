@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/scottkgregory/parsley/internal/assert"
 	"github.com/scottkgregory/parsley/internal/parser"
 )
 
@@ -252,41 +253,27 @@ func TestParse(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(tt *testing.T) {
-			actual, err := parser.Parse(tc.input, tc.data)
-			assertNil(tt, err)
+			actual, err := parser.Parse(tc.input)
+			assert.Nil(tt, err)
 			if err != nil {
 				return
 			}
 
-			val, err := actual.Eval()
-			assertNil(t, err)
-			assertEqual(tt, fmt.Sprint(tc.expected), fmt.Sprint(val))
-			assertEqual(tt, tc.expectedString, actual.String())
+			val, err := actual.Eval(tc.data)
+			assert.Nil(t, err)
+			assert.Equal(tt, fmt.Sprint(tc.expected), fmt.Sprint(val))
+			assert.Equal(tt, tc.expectedString, actual.String())
 		})
 	}
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("matcher_%s", tc.name), func(tt *testing.T) {
 			matcher, err := NewMatcher(true)
-			assertNil(t, err)
+			assert.Nil(t, err)
 
 			actual, err := matcher.Match(tc.input, tc.data)
-			assertEqual(tt, tc.expectedMatch, actual)
-			assertNil(t, err)
+			assert.Equal(tt, tc.expectedMatch, actual)
+			assert.Nil(t, err)
 		})
-	}
-}
-
-func assertNil(t *testing.T, val any) {
-	if val != nil {
-		fmt.Printf("expected nil but got %v\n", val)
-		t.Fail()
-	}
-}
-
-func assertEqual[T comparable](t *testing.T, expected, actual T) {
-	if expected != actual {
-		fmt.Printf("expected '%v' but got '%v'\n", expected, actual)
-		t.Fail()
 	}
 }

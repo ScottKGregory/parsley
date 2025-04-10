@@ -17,25 +17,23 @@ type BinaryNode struct {
 	Left  Node
 	Right Node
 	op    BinaryNodeOp
-
-	result any
 }
 
 var _ Node = &BinaryNode{}
 
 // NewBinaryNode creates a new binary node
 func NewBinaryNode(left, right Node, op BinaryNodeOp) *BinaryNode {
-	return &BinaryNode{left, right, op, 0}
+	return &BinaryNode{left, right, op}
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *BinaryNode) Eval() (any, error) {
+func (n *BinaryNode) Eval(data map[string]any) (any, error) {
 	// Evaluate both sides
-	leftVal, leftErr := n.Left.Eval()
+	leftVal, leftErr := n.Left.Eval(data)
 	if leftErr != nil {
 		return nil, fmt.Errorf("lhs error: %w", leftErr)
 	}
-	rightVal, rightErr := n.Right.Eval()
+	rightVal, rightErr := n.Right.Eval(data)
 	if rightErr != nil {
 		return nil, fmt.Errorf("rhs error: %w", rightErr)
 	}

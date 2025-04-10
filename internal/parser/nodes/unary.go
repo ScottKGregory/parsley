@@ -26,8 +26,8 @@ func NewUnaryNode(right Node, op UnaryNodeOp) *UnaryNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *UnaryNode) Eval() (any, error) {
-	val, err := n.Right.Eval()
+func (n *UnaryNode) Eval(data map[string]any) (any, error) {
+	val, err := n.Right.Eval(data)
 	if err != nil {
 		return nil, err
 	}

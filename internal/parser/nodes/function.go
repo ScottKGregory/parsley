@@ -69,23 +69,22 @@ func RegisterFunction(name string, fun Function) {
 type FunctionNode struct {
 	FunctionName string
 	Arguments    []Node
-	Data         map[string]any
 }
 
 var _ Node = &FunctionNode{}
 
 // NewFunctionNode creates a new function node
-func NewFunctionNode(functionName string, arguments []Node, data map[string]any) *FunctionNode {
-	return &FunctionNode{functionName, arguments, data}
+func NewFunctionNode(functionName string, arguments []Node) *FunctionNode {
+	return &FunctionNode{functionName, arguments}
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *FunctionNode) Eval() (any, error) {
+func (n *FunctionNode) Eval(data map[string]any) (any, error) {
 	// Evaluate all arguments
 	argVals := make([]any, len(n.Arguments))
 	for i, argument := range n.Arguments {
 		var err error
-		argVals[i], err = argument.Eval()
+		argVals[i], err = argument.Eval(data)
 		if err != nil {
 			return nil, fmt.Errorf("error in argument %d: %w", i, err)
 		}

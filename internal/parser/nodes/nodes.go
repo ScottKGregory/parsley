@@ -10,6 +10,6 @@ type NodeOp interface {
 
 // Node defines the basic capabilities of all nodes
 type Node interface {
-	Eval() (any, error)
+	Eval(data map[string]any) (any, error)
 	String() string
 }

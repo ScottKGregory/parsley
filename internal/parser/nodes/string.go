@@ -17,7 +17,7 @@ func NewStringNode(stringValue string) *StringNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *StringNode) Eval() (any, error) {
+func (n *StringNode) Eval(data map[string]any) (any, error) {
 	return n.StringValue, nil
 
 }

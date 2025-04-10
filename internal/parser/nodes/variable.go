@@ -7,20 +7,18 @@ import (
 // VariableNode is a node used to store a variable reference
 type VariableNode struct {
 	VariableName string
-	data         map[string]any
-	result       any
 }
 
 var _ Node = &VariableNode{}
 
 // NewVariableNode creates a new variable node
-func NewVariableNode(variableName string, data map[string]any) *VariableNode {
-	return &VariableNode{variableName, data, 0}
+func NewVariableNode(variableName string) *VariableNode {
+	return &VariableNode{variableName}
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *VariableNode) Eval() (any, error) {
-	return getValue(strings.Split(n.VariableName, "."), n.data), nil
+func (n *VariableNode) Eval(data map[string]any) (any, error) {
+	return getValue(strings.Split(n.VariableName, "."), data), nil
 }
 
 // String returns the string representation

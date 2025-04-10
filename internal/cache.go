@@ -26,7 +26,14 @@ func NewNoOpCache() Store[string, nodes.Node] {
 	return &NoOpCache[string, nodes.Node]{}
 }
 
-func (c *NoOpCache[K, V]) Wait()                               {}
-func (c *NoOpCache[K, V]) Get(key K) (V, bool)                 { return *new(V), false }
-func (c *NoOpCache[K, V]) Set(key K, value V, cost int64) bool { return true }
-func (c *NoOpCache[K, V]) Close()                              {}
+func (c *NoOpCache[K, V]) Wait() {}
+
+func (c *NoOpCache[K, V]) Get(key K) (V, bool) {
+	return *new(V), false
+}
+
+func (c *NoOpCache[K, V]) Set(key K, value V, cost int64) bool {
+	return true
+}
+
+func (c *NoOpCache[K, V]) Close() {}

@@ -36,7 +36,7 @@ func (m *Matcher) Match(str string, data map[string]any) (bool, error) {
 	node, found := m.cache.Get(str)
 	if !found {
 		var err error
-		node, err = parser.Parse(str, data)
+		node, err = parser.Parse(str)
 		if err != nil {
 			return false, err
 		}
@@ -45,7 +45,7 @@ func (m *Matcher) Match(str string, data map[string]any) (bool, error) {
 		m.cache.Wait()
 	}
 
-	val, err := node.Eval()
+	val, err := node.Eval(data)
 	if err != nil {
 		return false, fmt.Errorf("error evaluating expression: %w", err)
 	}

@@ -11,20 +11,19 @@ import (
 
 type parser struct {
 	tokenizer *tokenizer
-	data      map[string]any
 }
 
-func Parse(str string, data map[string]any) (nodes.Node, error) {
+func Parse(str string) (nodes.Node, error) {
 	t, err := newTokenizer(str)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseTokens(t, data)
+	return parseTokens(t)
 }
 
-func parseTokens(tokenizer *tokenizer, data map[string]any) (nodes.Node, error) {
-	parser := parser{tokenizer, data}
+func parseTokens(tokenizer *tokenizer) (nodes.Node, error) {
+	parser := parser{tokenizer}
 	return parser.parseExpression()
 }
 
@@ -296,10 +295,10 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			}
 
 			// Create the function call node
-			return nodes.NewFunctionNode(name, arguments, p.data), nil
+			return nodes.NewFunctionNode(name, arguments), nil
 		}
 
-		return nodes.NewVariableNode(name, p.data), nil
+		return nodes.NewVariableNode(name), nil
 	}
 
 	// Don't Understand

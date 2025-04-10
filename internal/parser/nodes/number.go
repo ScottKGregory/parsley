@@ -17,7 +17,7 @@ func NewNumberNode(number any) *NumberNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *NumberNode) Eval() (any, error) {
+func (n *NumberNode) Eval(data map[string]any) (any, error) {
 	return n.Number, nil
 }
 
