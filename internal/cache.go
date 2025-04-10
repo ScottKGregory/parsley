@@ -5,35 +5,48 @@ import (
 	"github.com/scottkgregory/parsley/internal/parser/nodes"
 )
 
-type Store[K comparable, V any] interface {
-	Wait()
+type Store[K string, V any] interface {
 	Get(key K) (V, bool)
-	Set(key K, value V, cost int64) bool
+	Set(key K, value V)
 	Close()
 }
 
-func NewRistrettoCache() (Store[string, nodes.Node], error) {
-	return ristretto.NewCache(&ristretto.Config[string, nodes.Node]{
+func NewCache() (Store[string, nodes.Node], error) {
+	inner, err := ristretto.NewCache(&ristretto.Config[string, nodes.Node]{
 		NumCounters: 1e7,
 		MaxCost:     1 << 30,
 		BufferItems: 64,
 	})
+	return &cache[string, nodes.Node]{inner}, err
 }
 
-type NoOpCache[K comparable, V any] struct{}
+type cache[K string, V any] struct {
+	inner *ristretto.Cache[K, V]
+}
+
+func (c *cache[K, V]) Get(key K) (V, bool) {
+	return c.inner.Get(key)
+}
+
+func (c *cache[K, V]) Set(key K, value V) {
+	c.inner.Set(key, value, 0)
+	c.inner.Wait()
+}
+
+func (c *cache[K, V]) Close() {
+	c.inner.Close()
+}
 
 func NewNoOpCache() Store[string, nodes.Node] {
-	return &NoOpCache[string, nodes.Node]{}
+	return &noOpCache[string, nodes.Node]{}
 }
 
-func (c *NoOpCache[K, V]) Wait() {}
+type noOpCache[K string, V any] struct{}
 
-func (c *NoOpCache[K, V]) Get(key K) (V, bool) {
+func (c *noOpCache[K, V]) Get(key K) (V, bool) {
 	return *new(V), false
 }
 
-func (c *NoOpCache[K, V]) Set(key K, value V, cost int64) bool {
-	return true
-}
+func (c *noOpCache[K, V]) Set(key K, value V) {}
 
-func (c *NoOpCache[K, V]) Close() {}
+func (c *noOpCache[K, V]) Close() {}
