@@ -2,7 +2,7 @@ package cache
 
 import (
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/scottkgregory/parsley/internal/parser/nodes"
+	"github.com/scottkgregory/parsley/internal/nodes"
 )
 
 type Store[K string, V any] interface {

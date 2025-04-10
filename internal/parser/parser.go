@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/scottkgregory/parsley/internal/parser/nodes"
-	"github.com/scottkgregory/parsley/internal/parser/operations"
+	"github.com/scottkgregory/parsley/internal/nodes"
+	"github.com/scottkgregory/parsley/internal/operations"
 )
 
 type parser struct {
@@ -53,9 +53,9 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 		var op nodes.BinaryNodeOp
 		switch p.tokenizer.Token {
 		case add:
-			op = &operations.AddOperation{}
+			op = &operations.ComparisonOperation{Comparator: "+"}
 		case subtract:
-			op = &operations.SubtractOperation{}
+			op = &operations.ComparisonOperation{Comparator: "-"}
 		}
 
 		// Binary operator found?
@@ -92,11 +92,11 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 		var op nodes.BinaryNodeOp
 		switch p.tokenizer.Token {
 		case multiply:
-			op = &operations.MultiplyOperation{}
+			op = &operations.ComparisonOperation{Comparator: "*"}
 		case divide:
-			op = &operations.DivideOperation{}
+			op = &operations.ComparisonOperation{Comparator: "/"}
 		case power:
-			op = &operations.PowerOperation{}
+			op = &operations.ComparisonOperation{Comparator: "^"}
 		case equal:
 			op = &operations.ComparisonOperation{Comparator: "=="}
 		case greaterThan:

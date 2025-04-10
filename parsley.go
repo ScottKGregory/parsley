@@ -3,10 +3,10 @@ package parsley
 import (
 	"fmt"
 
-	cache "github.com/scottkgregory/parsley/internal"
+	"github.com/scottkgregory/parsley/internal/cache"
 	"github.com/scottkgregory/parsley/internal/helpers"
+	"github.com/scottkgregory/parsley/internal/nodes"
 	"github.com/scottkgregory/parsley/internal/parser"
-	"github.com/scottkgregory/parsley/internal/parser/nodes"
 )
 
 type Matcher struct {
@@ -50,4 +50,9 @@ func (m *Matcher) Match(str string, data map[string]any) (bool, error) {
 	}
 
 	return helpers.ToBool(val)
+}
+
+// RegisterFunction registers a new function in the available set. Repeated calls will result in the latest one being registered
+func RegisterFunction(name string, fun nodes.Function) {
+	nodes.RegisterFunction(name, fun)
 }

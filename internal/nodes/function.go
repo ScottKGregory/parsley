@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/scottkgregory/parsley/internal/helpers"
-	"github.com/scottkgregory/parsley/internal/parser/operations"
+	"github.com/scottkgregory/parsley/internal/operations"
 )
 
 type Function func(args ...any) (any, error)

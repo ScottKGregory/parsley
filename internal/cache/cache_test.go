@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/scottkgregory/parsley/internal/assert"
-	"github.com/scottkgregory/parsley/internal/parser/nodes"
+	"github.com/scottkgregory/parsley/internal/nodes"
 )
 
 func TestCache(t *testing.T) {
