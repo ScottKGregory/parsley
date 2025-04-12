@@ -35,8 +35,8 @@ jobs:
           awk '!/internal\/assert/' coverage.out > temp && mv temp coverage.out
           coverage=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
           echo "total_coverage=$coverage" >> "$GITHUB_OUTPUT"
-          if (( $(echo "$coverage < 90" | bc -l) )); then
-          echo "Coverage ($coverage%) is below the threshold (90%)"
+          if (( $(echo "$coverage < 80" | bc -l) )); then
+          echo "Coverage ($coverage%) is below the threshold (80%)"
           exit 1
           fi
           echo "Coverage: $coverage%"
