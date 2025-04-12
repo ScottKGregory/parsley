@@ -26,16 +26,14 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-      - name: Generate coverage report
-        run: go test -coverprofile=coverage.out ./...
-
-      - name: Check coverage
+      - name: Test coverage
         id: coverage
         run: |
+          go test -coverprofile=coverage.out ./...
           coverage=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
           echo "total_coverage=$coverage" >> "$GITHUB_OUTPUT"
-          echo "Coverage: $coverage%"
           if (( $(echo "$coverage < 90" | bc -l) )); then
-            echo "Coverage ($coverage%) is below the threshold (90%)"
-            exit 1
+          echo "Coverage ($coverage%) is below the threshold (90%)"
+          exit 1
           fi
+          echo "Coverage: $coverage%"
