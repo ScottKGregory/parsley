@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"fmt"
+	"strings"
 )
 
 // StringNode is a node used to store a string
@@ -17,12 +18,12 @@ func NewStringNode(stringValue string) *StringNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *StringNode) Eval() (any, error) {
+func (n *StringNode) Eval(data map[string]any) (any, error) {
 	return n.StringValue, nil
 
 }
 
 // String returns the string representation
 func (n *StringNode) String() string {
-	return fmt.Sprintf("\"%s\"", n.StringValue)
+	return fmt.Sprintf("\"%s\"", strings.ReplaceAll(n.StringValue, `"`, `\"`))
 }

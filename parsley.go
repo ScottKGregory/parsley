@@ -3,10 +3,10 @@ package parsley
 import (
 	"fmt"
 
-	cache "github.com/scottkgregory/parsley/internal"
+	"github.com/scottkgregory/parsley/internal/cache"
 	"github.com/scottkgregory/parsley/internal/helpers"
+	"github.com/scottkgregory/parsley/internal/nodes"
 	"github.com/scottkgregory/parsley/internal/parser"
-	"github.com/scottkgregory/parsley/internal/parser/nodes"
 )
 
 type Matcher struct {
@@ -16,7 +16,7 @@ type Matcher struct {
 func NewMatcher(withCache bool) (m *Matcher, err error) {
 	m = &Matcher{}
 	if withCache {
-		m.cache, err = cache.NewRistrettoCache()
+		m.cache, err = cache.NewCache()
 		if err != nil {
 			return nil, err
 		}
@@ -36,19 +36,23 @@ func (m *Matcher) Match(str string, data map[string]any) (bool, error) {
 	node, found := m.cache.Get(str)
 	if !found {
 		var err error
-		node, err = parser.Parse(str, data)
+		node, err = parser.Parse(str)
 		if err != nil {
 			return false, err
 		}
 
-		m.cache.Set(str, node, 1)
-		m.cache.Wait()
+		m.cache.Set(str, node)
 	}
 
-	val, err := node.Eval()
+	val, err := node.Eval(data)
 	if err != nil {
 		return false, fmt.Errorf("error evaluating expression: %w", err)
 	}
 
 	return helpers.ToBool(val)
+}
+
+// RegisterFunction registers a new function in the available set. Repeated calls will result in the latest one being registered
+func RegisterFunction(name string, fun nodes.Function) {
+	nodes.RegisterFunction(name, fun)
 }

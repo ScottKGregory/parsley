@@ -2,6 +2,7 @@ package operations
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/scottkgregory/parsley/internal/helpers"
@@ -14,7 +15,6 @@ type ComparisonOperation struct {
 
 // Calculate establishes equality between two values
 func (o *ComparisonOperation) Calculate(a, b any) (any, error) {
-
 	if o.Comparator == "||" || o.Comparator == "&&" {
 		x, err := helpers.ToBool(a)
 		if err != nil {
@@ -67,6 +67,16 @@ func (o *ComparisonOperation) Calculate(a, b any) (any, error) {
 		return aa > bb, nil
 	case "=", "==":
 		return aa == bb, nil
+	case "+":
+		return aa + bb, nil
+	case "/":
+		return aa / bb, nil
+	case "*":
+		return aa * bb, nil
+	case "-":
+		return aa - bb, nil
+	case "^":
+		return math.Pow(aa, bb), nil
 	}
 
 	return nil, fmt.Errorf("unrecognised comparator: %s", string(o.Comparator))
@@ -74,5 +84,9 @@ func (o *ComparisonOperation) Calculate(a, b any) (any, error) {
 
 // String returns the string representation
 func (o *ComparisonOperation) String() string {
-	return fmt.Sprintf(" %s ", string(o.Comparator))
+	if o.Comparator == "<" || o.Comparator == ">" || o.Comparator == "=" || o.Comparator == "==" || o.Comparator == "||" || o.Comparator == "&&" {
+		return fmt.Sprintf(" %s ", o.Comparator)
+	}
+
+	return o.Comparator
 }

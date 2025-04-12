@@ -2,6 +2,8 @@ package nodes
 
 import (
 	"fmt"
+
+	"github.com/scottkgregory/parsley/internal/helpers"
 )
 
 // NumberNode is a node used to store a number
@@ -17,11 +19,11 @@ func NewNumberNode(number any) *NumberNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *NumberNode) Eval() (any, error) {
-	return n.Number, nil
+func (n *NumberNode) Eval(data map[string]any) (any, error) {
+	return helpers.ToFloat64(n.Number)
 }
 
 // String returns the string representation
 func (n *NumberNode) String() string {
-	return fmt.Sprintf("%.2f", n.Number)
+	return fmt.Sprintf("%v", n.Number)
 }
