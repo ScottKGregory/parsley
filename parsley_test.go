@@ -198,6 +198,8 @@ func TestParse(t *testing.T) {
 			actual, err := matcher.Match(tc.input, tc.data)
 			assert.Equal(tt, tc.expectedMatch, actual)
 			assert.Nil(t, err)
+
+			matcher.Close()
 		})
 	}
 }
