@@ -1,5 +1,4 @@
-// Package parser is a tokenizer/parser to evaluate matcher config
-package parser
+package parsley
 
 import (
 	"errors"
@@ -12,7 +11,7 @@ type parser struct {
 	tokenizer *tokenizer
 }
 
-func Parse(str string) (nodes.Node, error) {
+func parse(str string) (nodes.Node, error) {
 	t, err := newTokenizer(str)
 	if err != nil {
 		return nil, err

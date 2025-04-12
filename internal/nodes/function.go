@@ -8,9 +8,10 @@ import (
 	"github.com/scottkgregory/parsley/internal/helpers"
 )
 
+// Function defines the shape of a function that can be called inside an expression
 type Function func(args ...any) (any, error)
 
-var functions map[string]Function = map[string]Function{
+var functions = map[string]Function{
 	"ceil": func(args ...any) (any, error) {
 		x, err := helpers.ToFloat64(args[0])
 		if err != nil {

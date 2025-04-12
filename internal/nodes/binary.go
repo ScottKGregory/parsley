@@ -48,6 +48,7 @@ func (n *BinaryNode) String() string {
 	return fmt.Sprintf(f, n.Left.String(), n.op, n.Right.String())
 }
 
+// Calculate performs the provided operation on the given values
 func Calculate(op string, a, b any) (any, error) {
 	if op == "||" || op == "&&" {
 		x, err := helpers.ToBool(a)

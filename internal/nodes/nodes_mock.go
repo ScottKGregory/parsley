@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// MockNode is a mocked version of the Node interface, to be used in tests
 type MockNode struct {
 	evalCalled   bool
 	stringCalled bool
@@ -19,6 +20,7 @@ type MockNode struct {
 
 var _ Node = &MockNode{}
 
+// NewMockNode creates a new instance of a MockNode
 func NewMockNode(evalExpectedData map[string]any, evalResult any, evalErr error, stringResult string) *MockNode {
 	return &MockNode{
 		evalExpectedData: evalExpectedData,
@@ -28,6 +30,7 @@ func NewMockNode(evalExpectedData map[string]any, evalResult any, evalErr error,
 	}
 }
 
+// Eval mocks the Eval function
 func (m *MockNode) Eval(data map[string]any) (any, error) {
 	if !reflect.DeepEqual(m.evalExpectedData, data) {
 		panic(fmt.Errorf("supplied data did not match in call to Eval expected: %#v, actual: %#v", m.evalExpectedData, data))
@@ -37,11 +40,13 @@ func (m *MockNode) Eval(data map[string]any) (any, error) {
 	return m.evalResult, m.evalErr
 }
 
+// String mocks the String function
 func (m *MockNode) String() string {
 	m.stringCalled = true
 	return m.stringResult
 }
 
+// AssertEvalCalled checks that Eval has been called
 func (m *MockNode) AssertEvalCalled(t *testing.T) {
 	if !m.evalCalled {
 		fmt.Println("expected call to Eval")
@@ -49,6 +54,7 @@ func (m *MockNode) AssertEvalCalled(t *testing.T) {
 	}
 }
 
+// AssertStringCalled checks that String has been called
 func (m *MockNode) AssertStringCalled(t *testing.T) {
 	if !m.stringCalled {
 		fmt.Println("expected call to String")
