@@ -3,6 +3,7 @@ package helpers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -37,6 +38,8 @@ func ToFloat64(input any) (float64, error) {
 		return float64(x), nil
 	case float64:
 		return float64(x), nil
+	case string:
+		return strconv.ParseFloat(x, 64)
 	}
 
 	return 0, fmt.Errorf("cannot convert to float64: %T", input)
@@ -46,26 +49,13 @@ func ToBool(e any) (bool, error) {
 	switch x := e.(type) {
 	case bool:
 		return x, nil
-	case uint8:
-		return x > 0, nil
-	case uint16:
-		return x > 0, nil
-	case uint32:
-		return x > 0, nil
-	case uint64:
-		return x > 0, nil
-	case int8:
-		return x > 0, nil
-	case int16:
-		return x > 0, nil
-	case int32:
-		return x > 0, nil
-	case int64:
-		return x > 0, nil
-	case float32:
-		return x > 0, nil
-	case float64:
-		return x > 0, nil
+	case int, uint, uint8, uint16, uint32, uint64, int8, int16, int32, int64, float32, float64:
+		i, err := ToFloat64(x)
+		if err != nil {
+			return false, err
+		}
+
+		return i > 0, nil
 	case string:
 		switch strings.ToLower(x) {
 		case "yes", "true", "y", "1", "yarp":
@@ -74,7 +64,12 @@ func ToBool(e any) (bool, error) {
 			return false, nil
 		}
 
+		i, err := ToFloat64(x)
+		if err == nil {
+			return i > 0, nil
+		}
+
 		return false, fmt.Errorf("string '%s' could not be parsed as a bool", x)
 	}
-	return false, fmt.Errorf("unrecognised type produced by matcher: %T", e)
+	return false, fmt.Errorf("unrecognised type provided to bool: %T", e)
 }

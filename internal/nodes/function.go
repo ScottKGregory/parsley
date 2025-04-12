@@ -74,7 +74,7 @@ type FunctionNode struct {
 var _ Node = &FunctionNode{}
 
 // NewFunctionNode creates a new function node
-func NewFunctionNode(functionName string, arguments []Node) *FunctionNode {
+func NewFunctionNode(functionName string, arguments ...Node) *FunctionNode {
 	return &FunctionNode{functionName, arguments}
 }
 

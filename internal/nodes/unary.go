@@ -1,5 +1,3 @@
-//go:generate go tool ridicule -header -in ./unary.go
-
 package nodes
 
 import (
@@ -16,13 +14,11 @@ type UnaryNodeOp interface {
 type UnaryNode struct {
 	Right Node
 	op    UnaryNodeOp
-
-	result any
 }
 
 // NewUnaryNode creates a nwe unary node
 func NewUnaryNode(right Node, op UnaryNodeOp) *UnaryNode {
-	return &UnaryNode{right, op, 0}
+	return &UnaryNode{right, op}
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result

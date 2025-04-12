@@ -295,7 +295,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			}
 
 			// Create the function call node
-			return nodes.NewFunctionNode(name, arguments), nil
+			return nodes.NewFunctionNode(name, arguments...), nil
 		}
 
 		return nodes.NewVariableNode(name), nil

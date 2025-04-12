@@ -1,5 +1,3 @@
-//go:generate go tool ridicule -header -in ./binary.go
-
 package nodes
 
 import (
