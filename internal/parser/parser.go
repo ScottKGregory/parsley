@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/scottkgregory/parsley/internal/nodes"
-	"github.com/scottkgregory/parsley/internal/operations"
 )
 
 type parser struct {
@@ -50,16 +49,16 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 
 	for {
 		// Work out the operator
-		var op nodes.BinaryNodeOp
+		var op string
 		switch p.tokenizer.Token {
 		case add:
-			op = &operations.ComparisonOperation{Comparator: "+"}
+			op = "+"
 		case subtract:
-			op = &operations.ComparisonOperation{Comparator: "-"}
+			op = "-"
 		}
 
 		// Binary operator found?
-		if op == nil {
+		if op == "" {
 			return left, nil
 		}
 
@@ -89,28 +88,28 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 
 	for {
 		// Work out the operator
-		var op nodes.BinaryNodeOp
+		var op string
 		switch p.tokenizer.Token {
 		case multiply:
-			op = &operations.ComparisonOperation{Comparator: "*"}
+			op = "*"
 		case divide:
-			op = &operations.ComparisonOperation{Comparator: "/"}
+			op = "/"
 		case power:
-			op = &operations.ComparisonOperation{Comparator: "^"}
+			op = "^"
 		case equal:
-			op = &operations.ComparisonOperation{Comparator: "=="}
+			op = "=="
 		case greaterThan:
-			op = &operations.ComparisonOperation{Comparator: ">"}
+			op = ">"
 		case lessThan:
-			op = &operations.ComparisonOperation{Comparator: "<"}
+			op = "<"
 		case and:
-			op = &operations.ComparisonOperation{Comparator: "&&"}
+			op = "&&"
 		case or:
-			op = &operations.ComparisonOperation{Comparator: "||"}
+			op = "||"
 		}
 
 		// Binary operator found?
-		if op == nil {
+		if op == "" {
 			return left, nil
 		}
 
@@ -166,7 +165,7 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		}
 
 		// Create unary node
-		return nodes.NewUnaryNode(right, &operations.NegateOperation{}), nil
+		return nodes.NewUnaryNode(right, "-"), nil
 	}
 
 	// No positive/negative operator so parse a leaf node

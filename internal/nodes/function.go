@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/scottkgregory/parsley/internal/helpers"
-	"github.com/scottkgregory/parsley/internal/operations"
 )
 
 type Function func(args ...any) (any, error)
@@ -50,7 +49,7 @@ var functions map[string]Function = map[string]Function{
 	"contains_any": func(args ...any) (any, error) {
 		arr := args[0].([]any)
 		for _, v := range arr {
-			match, err := (&operations.ComparisonOperation{Comparator: "=="}).Calculate(v.(map[string]any)[args[1].(string)], args[2])
+			match, err := Calculate("==", v.(map[string]any)[args[1].(string)], args[2])
 			if match.(bool) || err != nil {
 				return match, err
 			}

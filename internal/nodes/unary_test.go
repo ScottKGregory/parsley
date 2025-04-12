@@ -10,21 +10,28 @@ import (
 func TestUnaryNode(t *testing.T) {
 	testCases := []struct {
 		right        *MockNode
-		op           *MockUnaryNodeOp
+		op           string
 		result       any
 		err          error
 		stringResult string
 	}{
 		{
 			right:        NewMockNode(nil, 12, nil, "12"),
-			op:           NewMockUnaryNodeOp(12, -12, nil, "-"),
+			op:           "?",
+			result:       nil,
+			err:          errors.New("unrecognised op: ?"),
+			stringResult: "?(12)",
+		},
+		{
+			right:        NewMockNode(nil, 12, nil, "12"),
+			op:           "-",
 			result:       -12,
 			err:          nil,
 			stringResult: "-(12)",
 		},
 		{
 			right:        NewMockNode(nil, 0, errors.New("uh oh"), "foobar"),
-			op:           NewMockUnaryNodeOp(nil, nil, nil, "-"),
+			op:           "-",
 			result:       nil,
 			err:          errors.New("uh oh"),
 			stringResult: "-(foobar)",
@@ -39,11 +46,6 @@ func TestUnaryNode(t *testing.T) {
 			assert.Equal(t, tc.result, res)
 
 			assert.Equal(t, tc.stringResult, n.String())
-
-			tc.right.AssertEvalCalled(t)
-			tc.right.AssertStringCalled(t)
-			tc.op.AssertCalculateCalled(t)
-			tc.op.AssertStringCalled(t)
 		})
 	}
 }

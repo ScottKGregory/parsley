@@ -218,6 +218,27 @@ func TestParse(t *testing.T) {
 			expected:       false,
 			expectedString: `object_attributes.state == "opened" && contains_any(object_attributes.labels, "title", 70)`,
 		},
+		{
+			name:           "order of operations",
+			input:          `36/6*3+2^2-(3+5)`,
+			data:           nil,
+			expected:       14,
+			expectedString: "36/6*3+2^2-3+5",
+		},
+		{
+			name:           "order of operations",
+			input:          `10 + (5 * 3 + 2)`,
+			data:           nil,
+			expected:       27,
+			expectedString: "10+5*3+2",
+		},
+		{
+			name:           "order of operations",
+			input:          `15 + (30 / 2)`,
+			data:           nil,
+			expected:       30,
+			expectedString: "15+30/2",
+		},
 	}
 
 	for _, tc := range testCases {
