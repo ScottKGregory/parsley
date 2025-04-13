@@ -11,12 +11,15 @@ import (
 
 // Parser provides parsing and evaluation functionality
 type Parser struct {
-	cache cache.Store[string, nodes.Node]
+	cache    cache.Store[string, nodes.Node]
+	Registry *registry
 }
 
 // NewParser configures a new parser. If a cache it required one will be set up using github.com/dgraph-io/ristretto/v2
 func NewParser(withCache bool) (m *Parser, err error) {
-	m = &Parser{}
+	m = &Parser{
+		Registry: newRegistry(),
+	}
 	if withCache {
 		m.cache, err = cache.NewCache()
 		if err != nil {
@@ -53,7 +56,7 @@ func parseAs[T any](m *Parser, str string, data map[string]any, converter func(e
 	node, found := m.cache.Get(str)
 	if !found {
 		var err error
-		node, err = parse(str)
+		node, err = parse(str, m.Registry)
 		if err != nil {
 			return *new(T), err
 		}
@@ -67,9 +70,4 @@ func parseAs[T any](m *Parser, str string, data map[string]any, converter func(e
 	}
 
 	return converter(val)
-}
-
-// RegisterFunction registers a new function in the available set. Repeated calls will result in the latest one being registered
-func RegisterFunction(name string, fun nodes.Function) {
-	nodes.RegisterFunction(name, fun)
 }

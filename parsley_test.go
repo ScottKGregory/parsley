@@ -17,6 +17,22 @@ func TestParse(t *testing.T) {
 		expectedString any
 	}{
 		{
+			name:           "basic negation",
+			input:          "-2",
+			data:           map[string]any{},
+			expectedBool:   toPtr(false),
+			expectedAny:    float64(-2),
+			expectedString: "-2",
+		},
+		{
+			name:           "negation",
+			input:          "-(2*2)",
+			data:           map[string]any{},
+			expectedBool:   toPtr(false),
+			expectedAny:    float64(-4),
+			expectedString: "-4",
+		},
+		{
 			name:           "basic addition",
 			input:          "1+2",
 			data:           map[string]any{},
@@ -207,6 +223,22 @@ func TestParse(t *testing.T) {
 			expectedBool:   toPtr(false),
 			expectedAny:    false,
 			expectedString: "false",
+		},
+		{
+			name:           "less than or greater than",
+			input:          `(foo < 2) || (foo > 1)`,
+			data:           map[string]any{"foo": 1.5},
+			expectedBool:   toPtr(true),
+			expectedAny:    true,
+			expectedString: "true",
+		},
+		{
+			name:           "less than or greater than",
+			input:          `(foo < 2) || (foo > 1)`,
+			data:           map[string]any{"foo": 4},
+			expectedBool:   toPtr(true),
+			expectedAny:    true,
+			expectedString: "true",
 		},
 		{
 			name:           "gitlab sample match",

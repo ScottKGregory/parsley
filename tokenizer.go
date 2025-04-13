@@ -2,6 +2,7 @@ package parsley
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -16,18 +17,32 @@ const (
 )
 
 type tokenizer struct {
-	raw         string
-	runes       []rune
-	position    int
-	currentRune rune
+	raw             string
+	runes           []rune
+	position        int
+	currentRune     rune
+	maxKnowTokenLen int
+	reg             *registry
 
 	Token      string
 	Number     float64
 	Identifier string
 }
 
-func newTokenizer(str string) (*tokenizer, error) {
-	t := &tokenizer{raw: str, runes: []rune(str), position: 0}
+func newTokenizer(str string, reg *registry) (*tokenizer, error) {
+	t := &tokenizer{
+		raw:      str,
+		runes:    []rune(str),
+		position: 0,
+		maxKnowTokenLen: len(slices.MaxFunc(reg.knownTokens, func(x, y string) int {
+			if len(x) > len(y) {
+				return len(x)
+			} else {
+				return len(y)
+			}
+		})),
+		reg: reg,
+	}
 	t.NextRune()
 	err := t.NextToken()
 
@@ -40,30 +55,39 @@ func (t *tokenizer) NextToken() (err error) {
 		t.NextRune()
 	}
 
-	// Special characters
-	switch t.currentRune {
-	case '\000':
+	if t.currentRune == '\000' {
 		t.Token = eof
 		return
+	}
 
-	case '+', '-', '*', '^', '/', '(', ')', '"', ',', '=', '>', '<', '&', '|':
+	t.Token = ""
+	if slices.ContainsFunc(t.reg.knownTokens, func(tok string) bool {
+		return t.currentRune == []rune(tok)[0]
+	}) {
 		t.Token = string(t.currentRune)
 		t.NextRune()
 
-		switch t.currentRune {
-		case '=', '&', '|':
-			t.Token += string(t.currentRune)
-			t.NextRune()
+		for i := 1; i < t.maxKnowTokenLen; i++ {
+			if slices.ContainsFunc(t.reg.knownTokens, func(tok string) bool {
+				if len([]rune(tok)) >= i+1 {
+					return t.currentRune == []rune(tok)[i]
+				}
+
+				return false
+			}) {
+				t.Token = t.Token + string(t.currentRune)
+				t.NextRune()
+			}
 		}
 
 		return
 	}
 
 	// Identifier - starts with letter or underscore
-	if isPartOfVariable(t.currentRune) {
+	if isPartOfIdentifier(t.currentRune) {
 		sb := strings.Builder{}
 
-		for isPartOfVariable(t.currentRune) {
+		for isPartOfIdentifier(t.currentRune) {
 			sb.WriteRune(t.currentRune)
 			t.NextRune()
 		}
@@ -112,6 +136,6 @@ func (t *tokenizer) NextRune() {
 	t.position++
 }
 
-func isPartOfVariable(r rune) bool {
+func isPartOfIdentifier(r rune) bool {
 	return unicode.IsLetter(r) || r == '_' || r == '.'
 }

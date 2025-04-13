@@ -3,21 +3,27 @@ package parsley
 import (
 	"errors"
 	"fmt"
+	"maps"
 
+	"github.com/scottkgregory/parsley/internal/helpers"
 	"github.com/scottkgregory/parsley/internal/nodes"
 )
 
+// ErrFunctionNotFound is returned when an unrecognised function is found
+const ErrFunctionNotFound = helpers.ConstError("function not found")
+
 type parser struct {
 	tokenizer *tokenizer
+	reg       *registry
 }
 
-func parse(str string) (nodes.Node, error) {
-	t, err := newTokenizer(str)
+func parse(str string, reg *registry) (nodes.Node, error) {
+	t, err := newTokenizer(str, reg)
 	if err != nil {
 		return nil, err
 	}
 
-	return (&parser{t}).parseExpression()
+	return (&parser{t, reg}).parseExpression()
 }
 
 func (p *parser) parseExpression() (nodes.Node, error) {
@@ -49,8 +55,15 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 			op = p.tokenizer.Token
 		}
 
+		var mapKey string
+		for k := range maps.Keys(p.reg.binaryNodes) {
+			if k == p.tokenizer.Token {
+				mapKey = k
+			}
+		}
+
 		// Binary operator found?
-		if op == "" {
+		if op == "" && mapKey == "" {
 			return left, nil
 		}
 
@@ -67,7 +80,11 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 		}
 
 		// Create a binary node and use it as the left-hand side from now on
-		left = nodes.NewBinaryNode(left, right, op)
+		if n, ok := p.reg.binaryNodes[mapKey]; ok {
+			left = n(left, right)
+		} else {
+			left = nodes.NewBinaryNode(left, right, op)
+		}
 	}
 }
 
@@ -103,7 +120,6 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 			return nil, err
 		}
 
-		// Create a binary node and use it as the left-hand side from now on
 		left = nodes.NewBinaryNode(left, right, op)
 	}
 }
@@ -119,8 +135,15 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		return p.parseUnary()
 	}
 
+	var mapKey string
+	for k := range maps.Keys(p.reg.unaryNodes) {
+		if k == p.tokenizer.Token {
+			mapKey = k
+		}
+	}
+
 	// Negative operator
-	if p.tokenizer.Token == "-" {
+	if p.tokenizer.Token == "-" || mapKey != "" {
 		// Skip
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -128,14 +151,17 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		}
 
 		// Parse right
-		// Note p recurses to self to support negative of a negative
 		right, err := p.parseUnary()
 		if err != nil {
 			return nil, err
 		}
 
+		if n, ok := p.reg.unaryNodes[mapKey]; ok {
+			return n(right), nil
+		}
+
 		// Create unary node
-		return nodes.NewUnaryNode(right, p.tokenizer.Token), nil
+		return nodes.NewUnaryNode(right, "-"), nil
 	}
 
 	// No positive/negative operator so parse a leaf node
@@ -263,8 +289,13 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 				return nil, err
 			}
 
+			fun, ok := p.reg.functions[name]
+			if !ok {
+				return nil, fmt.Errorf("%w: %s", ErrFunctionNotFound, name)
+			}
+
 			// Create the function call node
-			return nodes.NewFunctionNode(name, arguments...), nil
+			return nodes.NewFunctionNode(fun, name, arguments...), nil
 		}
 
 		return nodes.NewVariableNode(name), nil

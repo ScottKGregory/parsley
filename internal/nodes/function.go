@@ -2,74 +2,12 @@ package nodes
 
 import (
 	"fmt"
-	"math"
 	"strings"
-
-	"github.com/scottkgregory/parsley/internal/helpers"
 )
-
-// ErrFunctionNotFound is returned when an unrecognised function is found
-const ErrFunctionNotFound = helpers.ConstError("function not found")
-
-// Function defines the shape of a function that can be called inside an expression
-type Function func(args ...any) (any, error)
-
-var functions = map[string]Function{
-	"ceil": func(args ...any) (any, error) {
-		x, err := helpers.ToFloat64(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error calling function ceil: %w", err)
-		}
-		return math.Ceil(x), nil
-	},
-	"floor": func(args ...any) (any, error) {
-		x, err := helpers.ToFloat64(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error calling function floor: %w", err)
-		}
-		return math.Floor(x), nil
-	},
-	"round": func(args ...any) (any, error) {
-		x, err := helpers.ToFloat64(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error calling function round: %w", err)
-		}
-		return math.Round(x), nil
-	},
-	"truncate": func(args ...any) (any, error) {
-		x, err := helpers.ToFloat64(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error calling function truncate: %w", err)
-		}
-		return math.Trunc(x), nil
-	},
-	"absolute": func(args ...any) (any, error) {
-		x, err := helpers.ToFloat64(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("error calling function absolute: %w", err)
-		}
-		return math.Abs(x), nil
-	},
-	"contains_any": func(args ...any) (any, error) {
-		arr := args[0].([]any)
-		for _, v := range arr {
-			match, err := Calculate("==", v.(map[string]any)[args[1].(string)], args[2])
-			if match.(bool) || err != nil {
-				return match, err
-			}
-		}
-
-		return false, nil
-	},
-}
-
-// RegisterFunction registers a new function in the available set. Repeated calls will result in the latest one being registered
-func RegisterFunction(name string, fun Function) {
-	functions[name] = fun
-}
 
 // FunctionNode is the interface for an operation that executes a function
 type FunctionNode struct {
+	fun          func(args ...any) (any, error)
 	FunctionName string
 	Arguments    []Node
 }
@@ -77,8 +15,8 @@ type FunctionNode struct {
 var _ Node = &FunctionNode{}
 
 // NewFunctionNode creates a new function node
-func NewFunctionNode(functionName string, arguments ...Node) *FunctionNode {
-	return &FunctionNode{functionName, arguments}
+func NewFunctionNode(fun func(args ...any) (any, error), functionName string, arguments ...Node) *FunctionNode {
+	return &FunctionNode{fun, functionName, arguments}
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
@@ -93,12 +31,7 @@ func (n *FunctionNode) Eval(data map[string]any) (any, error) {
 		}
 	}
 
-	f, ok := functions[n.FunctionName]
-	if !ok {
-		return nil, fmt.Errorf("%w: %w '%s'", ErrNodeEvalFailed, ErrFunctionNotFound, n.FunctionName)
-	}
-
-	ret, err := f(argVals...)
+	ret, err := n.fun(argVals...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
 	}
