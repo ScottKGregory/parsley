@@ -136,11 +136,7 @@ func (t *tokenizer) NextToken() (err error) {
 		sb := strings.Builder{}
 
 		for isPartOfVariable(t.currentRune) {
-			_, err = sb.WriteRune(t.currentRune)
-			if err != nil {
-				return err
-			}
-
+			sb.WriteRune(t.currentRune)
 			t.NextRune()
 		}
 
@@ -157,10 +153,7 @@ func (t *tokenizer) NextToken() (err error) {
 		haveDecimalPoint := false
 		for unicode.IsDigit(t.currentRune) ||
 			(!haveDecimalPoint && t.currentRune == '.') {
-			_, err = sb.WriteRune(t.currentRune)
-			if err != nil {
-				return err
-			}
+			sb.WriteRune(t.currentRune)
 
 			haveDecimalPoint = t.currentRune == '.'
 			t.NextRune()
@@ -169,7 +162,7 @@ func (t *tokenizer) NextToken() (err error) {
 		// Parse it
 		t.Number, err = strconv.ParseFloat(sb.String(), 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("error parsing float: %w", err)
 		}
 
 		t.Token = number

@@ -62,14 +62,17 @@ func TestToFloat64(t *testing.T) {
 		{float64(33.33333), float64(33.33333), nil},
 		{"33", float64(33), nil},
 
-		{"NOT_A_NUMBER", 0, errors.New("strconv.ParseFloat: parsing \"NOT_A_NUMBER\": invalid syntax")},
-		{true, 0, errors.New("cannot convert to float64: bool")},
+		{"NOT_A_NUMBER", 0, errors.New("error parsing value as float, could not parse string 'NOT_A_NUMBER'")},
+		{true, 0, errors.New("error parsing value as float, invalid type: bool")},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%T_%v", tc.a, tc.a), func(t *testing.T) {
 			result, err := ToFloat64(tc.a)
 			assert.Equal(t, tc.result, result)
-			assert.Equal(t, tc.err, err)
+			assert.ErrorEqual(t, tc.err, err)
+			if tc.err != nil {
+				assert.ErrorIs(t, ErrInvalidFloat, err)
+			}
 		})
 	}
 }
@@ -126,14 +129,17 @@ func TestToBool(t *testing.T) {
 		{"1.2", true, nil},
 		{"0.4", true, nil},
 
-		{"asdfouhasdf", false, errors.New("string 'asdfouhasdf' could not be parsed as a bool")},
-		{[]string{"foo", "bar"}, false, errors.New("unrecognised type provided to bool: []string")},
+		{"asdfouhasdf", false, errors.New("error parsing value as bool, could not parse string 'asdfouhasdf'")},
+		{[]string{"foo", "bar"}, false, errors.New("error parsing value as bool, invalid type: []string")},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%T_%v", tc.a, tc.a), func(t *testing.T) {
 			result, err := ToBool(tc.a)
 			assert.Equal(t, tc.result, result)
-			assert.Equal(t, tc.err, err)
+			assert.ErrorEqual(t, tc.err, err)
+			if tc.err != nil {
+				assert.ErrorIs(t, ErrInvalidBool, err)
+			}
 		})
 	}
 }

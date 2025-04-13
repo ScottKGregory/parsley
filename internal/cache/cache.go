@@ -2,9 +2,15 @@
 package cache
 
 import (
+	"fmt"
+
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/scottkgregory/parsley/internal/helpers"
 	"github.com/scottkgregory/parsley/internal/nodes"
 )
+
+// ErrCacheSetup is returned when setting up the cache fails
+const ErrCacheSetup = helpers.ConstError("error setting up cache")
 
 // Store provides caching functions
 type Store[K string, V any] interface {
@@ -20,7 +26,11 @@ func NewCache() (Store[string, nodes.Node], error) {
 		MaxCost:     1 << 30,
 		BufferItems: 64,
 	})
-	return &cache[string, nodes.Node]{inner}, err
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrCacheSetup, err)
+	}
+
+	return &cache[string, nodes.Node]{inner}, nil
 }
 
 type cache[K string, V any] struct {

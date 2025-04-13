@@ -8,6 +8,9 @@ import (
 	"github.com/scottkgregory/parsley/internal/helpers"
 )
 
+// ErrComparisonFailed is returned when the comparison of two values fails
+const ErrComparisonFailed = helpers.ConstError("error running comparison")
+
 // BinaryNode is a node that has both a left and right side
 type BinaryNode struct {
 	Left  Node
@@ -27,15 +30,20 @@ func (n *BinaryNode) Eval(data map[string]any) (any, error) {
 	// Evaluate both sides
 	leftVal, leftErr := n.Left.Eval(data)
 	if leftErr != nil {
-		return nil, fmt.Errorf("lhs error: %w", leftErr)
-	}
-	rightVal, rightErr := n.Right.Eval(data)
-	if rightErr != nil {
-		return nil, fmt.Errorf("rhs error: %w", rightErr)
+		return nil, fmt.Errorf("%w, left side error: %w", ErrNodeEvalFailed, leftErr)
 	}
 
-	// Evaluate and return
-	return Calculate(n.op, leftVal, rightVal)
+	rightVal, rightErr := n.Right.Eval(data)
+	if rightErr != nil {
+		return nil, fmt.Errorf("%w, right side error: %w", ErrNodeEvalFailed, rightErr)
+	}
+
+	ret, err := Calculate(n.op, leftVal, rightVal)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
+	}
+
+	return ret, nil
 }
 
 // String returns the string representation
@@ -53,12 +61,12 @@ func Calculate(op string, a, b any) (any, error) {
 	if op == "||" || op == "&&" {
 		x, err := helpers.ToBool(a)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse as boolean: %T %T", a, b)
+			return nil, fmt.Errorf("%w: %w", ErrComparisonFailed, err)
 		}
 
 		y, err := helpers.ToBool(b)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse as boolean: %T %T", a, b)
+			return nil, fmt.Errorf("%w: %w", ErrComparisonFailed, err)
 		}
 
 		if op == "||" {
@@ -82,17 +90,17 @@ func Calculate(op string, a, b any) (any, error) {
 	}
 
 	if aOk || bOk {
-		return nil, fmt.Errorf("only one side of comparison was a string: %T %T", a, b)
+		return nil, fmt.Errorf("%w: only one side of comparison was a string: %T %T", ErrComparisonFailed, a, b)
 	}
 
 	aa, aErr := helpers.ToFloat64(a)
 	if aErr != nil {
-		return nil, fmt.Errorf("error in lhs: %w", aErr)
+		return nil, fmt.Errorf("%w: error in left side: %w", ErrComparisonFailed, aErr)
 	}
 
 	bb, bErr := helpers.ToFloat64(b)
 	if bErr != nil {
-		return nil, fmt.Errorf("error in rhs: %w", bErr)
+		return nil, fmt.Errorf("%w: error in right side: %w", ErrComparisonFailed, bErr)
 	}
 
 	switch op {
@@ -114,5 +122,5 @@ func Calculate(op string, a, b any) (any, error) {
 		return math.Pow(aa, bb), nil
 	}
 
-	return nil, fmt.Errorf("unrecognised op: %s", string(op))
+	return nil, fmt.Errorf("%w: unrecognised op: %s", ErrComparisonFailed, string(op))
 }

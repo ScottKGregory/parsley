@@ -25,6 +25,10 @@ linters:
       - linters:
           - goconst
         path: _test\.go
+      - source: "sb.writeRune"
+        linters:
+          - errcheck
+
 formatters:
   exclusions:
     generated: lax

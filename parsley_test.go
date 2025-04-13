@@ -21,7 +21,7 @@ func TestParse(t *testing.T) {
 			input:          "1+1",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    2,
+			expectedAny:    float64(2),
 			expectedString: "2",
 		},
 		{
@@ -29,7 +29,7 @@ func TestParse(t *testing.T) {
 			input:          "10-1",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    9,
+			expectedAny:    float64(9),
 			expectedString: "9",
 		},
 		{
@@ -37,7 +37,7 @@ func TestParse(t *testing.T) {
 			input:          "3/3",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    1,
+			expectedAny:    float64(1),
 			expectedString: "1",
 		},
 		{
@@ -45,7 +45,7 @@ func TestParse(t *testing.T) {
 			input:          "(3+3)/3",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    2,
+			expectedAny:    float64(2),
 			expectedString: "2",
 		},
 		{
@@ -53,7 +53,7 @@ func TestParse(t *testing.T) {
 			input:          "(3/3)+5",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    6,
+			expectedAny:    float64(6),
 			expectedString: "6",
 		},
 		{
@@ -109,7 +109,7 @@ func TestParse(t *testing.T) {
 			input:          `ceil(2.1)`,
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    3,
+			expectedAny:    float64(3),
 			expectedString: "3",
 		},
 		{
@@ -117,7 +117,7 @@ func TestParse(t *testing.T) {
 			input:          `floor(2.9)`,
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    2,
+			expectedAny:    float64(2),
 			expectedString: "2",
 		},
 		{
@@ -125,7 +125,7 @@ func TestParse(t *testing.T) {
 			input:          `round(2.9)`,
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    3,
+			expectedAny:    float64(3),
 			expectedString: "3",
 		},
 		{
@@ -133,7 +133,7 @@ func TestParse(t *testing.T) {
 			input:          `round(2.49)`,
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    2,
+			expectedAny:    float64(2),
 			expectedString: "2",
 		},
 		{
@@ -141,7 +141,7 @@ func TestParse(t *testing.T) {
 			input:          `truncate(2.9)`,
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    2,
+			expectedAny:    float64(2),
 			expectedString: "2",
 		},
 		{
@@ -273,7 +273,7 @@ func TestParse(t *testing.T) {
 		}
 
 		t.Run(fmt.Sprintf("as_string_%s", tc.name), func(tt *testing.T) {
-			matcher, err := NewParser(true)
+			matcher, err := NewParser(false)
 			assert.Nil(t, err)
 
 			actual, err := matcher.ParseAsString(tc.input, tc.data)
@@ -284,7 +284,7 @@ func TestParse(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("as_any_%s", tc.name), func(tt *testing.T) {
-			matcher, err := NewParser(true)
+			matcher, err := NewParser(false)
 			assert.Nil(t, err)
 
 			actual, err := matcher.ParseAsAny(tc.input, tc.data)

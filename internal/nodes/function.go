@@ -8,6 +8,9 @@ import (
 	"github.com/scottkgregory/parsley/internal/helpers"
 )
 
+// ErrFunctionNotFound is returned when an unrecognised function is found
+const ErrFunctionNotFound = helpers.ConstError("function not found")
+
 // Function defines the shape of a function that can be called inside an expression
 type Function func(args ...any) (any, error)
 
@@ -86,16 +89,21 @@ func (n *FunctionNode) Eval(data map[string]any) (any, error) {
 		var err error
 		argVals[i], err = argument.Eval(data)
 		if err != nil {
-			return nil, fmt.Errorf("error in argument %d: %w", i, err)
+			return nil, fmt.Errorf("%w, error in argument %d: %w", ErrNodeEvalFailed, i, err)
 		}
 	}
 
 	f, ok := functions[n.FunctionName]
 	if !ok {
-		return nil, fmt.Errorf("function %s not found", n.FunctionName)
+		return nil, fmt.Errorf("%w: %w '%s'", ErrNodeEvalFailed, ErrFunctionNotFound, n.FunctionName)
 	}
 
-	return f(argVals...)
+	ret, err := f(argVals...)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
+	}
+
+	return ret, nil
 }
 
 // String returns the string representation

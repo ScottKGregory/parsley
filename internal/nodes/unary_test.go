@@ -19,13 +19,13 @@ func TestUnaryNode(t *testing.T) {
 			right:        NewMockNode(nil, 12, nil, "12"),
 			op:           "?",
 			result:       nil,
-			err:          errors.New("unrecognised op: ?"),
+			err:          errors.New("node evaluation failed: unrecognised op: ?"),
 			stringResult: "?(12)",
 		},
 		{
 			right:        NewMockNode(nil, 12, nil, "12"),
 			op:           "-",
-			result:       -12,
+			result:       float64(-12),
 			err:          nil,
 			stringResult: "-(12)",
 		},
@@ -33,7 +33,7 @@ func TestUnaryNode(t *testing.T) {
 			right:        NewMockNode(nil, 0, errors.New("uh oh"), "foobar"),
 			op:           "-",
 			result:       nil,
-			err:          errors.New("uh oh"),
+			err:          errors.New("node evaluation failed: uh oh"),
 			stringResult: "-(foobar)",
 		},
 	}
@@ -42,7 +42,7 @@ func TestUnaryNode(t *testing.T) {
 			n := NewUnaryNode(tc.right, tc.op)
 
 			res, err := n.Eval(nil)
-			assert.Equal(t, tc.err, err)
+			assert.ErrorEqual(t, tc.err, err)
 			assert.Equal(t, tc.result, res)
 
 			assert.Equal(t, tc.stringResult, n.String())

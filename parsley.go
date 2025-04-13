@@ -20,7 +20,7 @@ func NewParser(withCache bool) (m *Parser, err error) {
 	if withCache {
 		m.cache, err = cache.NewCache()
 		if err != nil {
-			return nil, err
+			return nil, err //nolint:wrapcheck // Error is already wrapped
 		}
 	} else {
 		m.cache = cache.NewNoOpCache()

@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+const (
+	// ErrInvalidFloat is returned when a values fails to parse as a float64
+	ErrInvalidFloat = ConstError("error parsing value as float")
+
+	// ErrInvalidBool is returned when a value fails to parse as a bool
+	ErrInvalidBool = ConstError("error parsing value as bool")
+)
+
 // TypesMatch check if the types of the two values are the same
 func TypesMatch(a, b any) bool {
 	return fmt.Sprintf("%T", a) == fmt.Sprintf("%T", b)
@@ -40,10 +48,15 @@ func ToFloat64(input any) (float64, error) {
 	case float64:
 		return float64(x), nil
 	case string:
-		return strconv.ParseFloat(x, 64)
+		ret, err := strconv.ParseFloat(x, 64)
+		if err != nil {
+			return 0, fmt.Errorf("%w, could not parse string '%s'", ErrInvalidFloat, x)
+		}
+
+		return ret, nil
 	}
 
-	return 0, fmt.Errorf("cannot convert to float64: %T", input)
+	return 0, fmt.Errorf("%w, invalid type: %T", ErrInvalidFloat, input)
 }
 
 // ToBool converts the input value in to a bool.
@@ -75,9 +88,9 @@ func ToBool(e any) (bool, error) {
 			return i > 0, nil
 		}
 
-		return false, fmt.Errorf("string '%s' could not be parsed as a bool", x)
+		return false, fmt.Errorf("%w, could not parse string '%s'", ErrInvalidBool, x)
 	}
-	return false, fmt.Errorf("unrecognised type provided to bool: %T", e)
+	return false, fmt.Errorf("%w, invalid type: %T", ErrInvalidBool, e)
 }
 
 // ToString converts the input to a string

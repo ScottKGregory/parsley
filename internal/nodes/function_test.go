@@ -18,23 +18,23 @@ func TestFunctionNode(t *testing.T) {
 		result       any
 		stringResult string
 	}{
-		{"ceil", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, 3, "ceil(2.1)"},
-		{"floor", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, 2, "floor(2.1)"},
-		{"round", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, 2, "round(2.1)"},
-		{"truncate", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, 2, "truncate(2.1)"},
+		{"ceil", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, float64(3), "ceil(2.1)"},
+		{"floor", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, float64(2), "floor(2.1)"},
+		{"round", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, float64(2), "round(2.1)"},
+		{"truncate", nil, []Node{NewMockNode(nil, 2.1, nil, "2.1")}, nil, float64(2), "truncate(2.1)"},
 		{"absolute", nil, []Node{NewMockNode(nil, -2.1, nil, "2.1")}, nil, 2.1, "absolute(2.1)"},
 
-		{"ceil", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, 3, "ceil(2.1)"},
-		{"floor", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, 2, "floor(2.1)"},
-		{"round", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, 2, "round(2.1)"},
-		{"truncate", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, 2, "truncate(2.1)"},
+		{"ceil", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, float64(3), "ceil(2.1)"},
+		{"floor", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, float64(2), "floor(2.1)"},
+		{"round", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, float64(2), "round(2.1)"},
+		{"truncate", nil, []Node{NewMockNode(nil, "2.1", nil, "2.1")}, nil, float64(2), "truncate(2.1)"},
 		{"absolute", nil, []Node{NewMockNode(nil, "-2.1", nil, "2.1")}, nil, 2.1, "absolute(2.1)"},
 
 		{
 			"ceil",
 			nil,
 			[]Node{NewMockNode(nil, "bleh", nil, "2.1")},
-			errors.New(`error calling function ceil: strconv.ParseFloat: parsing "bleh": invalid syntax`),
+			errors.New(`node evaluation failed: error calling function ceil: error parsing value as float, could not parse string 'bleh'`),
 			nil,
 			"ceil(2.1)",
 		},
@@ -42,7 +42,7 @@ func TestFunctionNode(t *testing.T) {
 			"floor",
 			nil,
 			[]Node{NewMockNode(nil, "bleh", nil, "2.1")},
-			errors.New(`error calling function floor: strconv.ParseFloat: parsing "bleh": invalid syntax`),
+			errors.New(`node evaluation failed: error calling function floor: error parsing value as float, could not parse string 'bleh'`),
 			nil,
 			"floor(2.1)",
 		},
@@ -50,7 +50,7 @@ func TestFunctionNode(t *testing.T) {
 			"round",
 			nil,
 			[]Node{NewMockNode(nil, "bleh", nil, "2.1")},
-			errors.New(`error calling function round: strconv.ParseFloat: parsing "bleh": invalid syntax`),
+			errors.New(`node evaluation failed: error calling function round: error parsing value as float, could not parse string 'bleh'`),
 			nil,
 			"round(2.1)",
 		},
@@ -58,7 +58,7 @@ func TestFunctionNode(t *testing.T) {
 			"truncate",
 			nil,
 			[]Node{NewMockNode(nil, "bleh", nil, "2.1")},
-			errors.New(`error calling function truncate: strconv.ParseFloat: parsing "bleh": invalid syntax`),
+			errors.New(`node evaluation failed: error calling function truncate: error parsing value as float, could not parse string 'bleh'`),
 			nil,
 			"truncate(2.1)",
 		},
@@ -66,15 +66,15 @@ func TestFunctionNode(t *testing.T) {
 			"absolute",
 			nil,
 			[]Node{NewMockNode(nil, "bleh", nil, "2.1")},
-			errors.New(`error calling function absolute: strconv.ParseFloat: parsing "bleh": invalid syntax`),
+			errors.New(`node evaluation failed: error calling function absolute: error parsing value as float, could not parse string 'bleh'`),
 			nil,
 			"absolute(2.1)",
 		},
 		{
 			"absolute",
 			nil,
-			[]Node{NewMockNode(nil, 2.1, errors.New("uh oh"), "2.1")},
-			errors.New(`error in argument 0: uh oh`),
+			[]Node{NewMockNode(nil, 2.1, errors.New("node evaluation failed: uh oh"), "2.1")},
+			errors.New(`node evaluation failed, error in argument 0: node evaluation failed: uh oh`),
 			nil,
 			"absolute(2.1)",
 		},
@@ -108,7 +108,7 @@ func TestFunctionNode(t *testing.T) {
 			"not_found",
 			data1,
 			[]Node{},
-			errors.New("function not_found not found"),
+			errors.New("node evaluation failed: function not found 'not_found'"),
 			nil,
 			`not_found()`,
 		},
@@ -118,7 +118,7 @@ func TestFunctionNode(t *testing.T) {
 			n := NewFunctionNode(tc.name, tc.args...)
 
 			res, err := n.Eval(tc.data)
-			assert.Equal(t, tc.err, err)
+			assert.ErrorEqual(t, tc.err, err)
 			assert.Equal(t, tc.result, res)
 
 			assert.Equal(t, tc.stringResult, n.String())

@@ -20,16 +20,20 @@ func NewUnaryNode(right Node, op string) *UnaryNode {
 // Eval runs the appropriate logic to evaluate the node and produce a single result
 func (n *UnaryNode) Eval(data map[string]any) (any, error) {
 	if n.op != "-" {
-		return nil, fmt.Errorf("unrecognised op: %s", string(n.op))
+		return nil, fmt.Errorf("%w: unrecognised op: %s", ErrNodeEvalFailed, string(n.op))
 	}
 
 	val, err := n.Right.Eval(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
 	}
 
 	aa, err := helpers.ToFloat64(val)
-	return -aa, err
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
+	}
+
+	return -aa, nil
 }
 
 // String returns the string representation
