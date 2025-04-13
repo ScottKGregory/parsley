@@ -7,26 +7,12 @@ import (
 	"unicode"
 )
 
-type token string
+// type token string
 
 const (
-	eof         = "EOF"
-	add         = "Add"
-	subtract    = "Subtract"
-	multiply    = "Multiply"
-	divide      = "Divide"
-	openParens  = "OpenParens"
-	closeParens = "CloseParens"
-	identifier  = "Identifier"
-	number      = "Number"
-	equal       = "Equal"
-	greaterThan = "GreaterThan"
-	lessThan    = "LessThan"
-	power       = "Power"
-	comma       = "Comma"
-	quote       = "Quote"
-	and         = "And"
-	or          = "Or"
+	eof        = "EOF"
+	identifier = "Identifier"
+	number     = "Number"
 )
 
 type tokenizer struct {
@@ -35,7 +21,7 @@ type tokenizer struct {
 	position    int
 	currentRune rune
 
-	Token      token
+	Token      string
 	Number     float64
 	Identifier string
 }
@@ -60,74 +46,16 @@ func (t *tokenizer) NextToken() (err error) {
 		t.Token = eof
 		return
 
-	case '+':
+	case '+', '-', '*', '^', '/', '(', ')', '"', ',', '=', '>', '<', '&', '|':
+		t.Token = string(t.currentRune)
 		t.NextRune()
-		t.Token = add
-		return
 
-	case '-':
-		t.NextRune()
-		t.Token = subtract
-		return
+		switch t.currentRune {
+		case '=', '&', '|':
+			t.Token += string(t.currentRune)
+			t.NextRune()
+		}
 
-	case '*':
-		t.NextRune()
-		t.Token = multiply
-		return
-
-	case '^':
-		t.NextRune()
-		t.Token = power
-		return
-
-	case '/':
-		t.NextRune()
-		t.Token = divide
-		return
-
-	case '(':
-		t.NextRune()
-		t.Token = openParens
-		return
-
-	case ')':
-		t.NextRune()
-		t.Token = closeParens
-		return
-
-	case '"':
-		t.NextRune()
-		t.Token = quote
-		return
-
-	case ',':
-		t.NextRune()
-		t.Token = comma
-		return
-
-	case '=':
-		t.NextRune()
-		t.Token = equal
-		return
-
-	case '>':
-		t.NextRune()
-		t.Token = greaterThan
-		return
-
-	case '<':
-		t.NextRune()
-		t.Token = lessThan
-		return
-
-	case '&':
-		t.NextRune()
-		t.Token = and
-		return
-
-	case '|':
-		t.NextRune()
-		t.Token = or
 		return
 	}
 

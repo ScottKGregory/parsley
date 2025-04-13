@@ -136,12 +136,6 @@ func TestComparison(t *testing.T) {
 		{comp: "==", a: 2, b: "a", result: nil, err: errors.New("error running comparison: only one side of comparison was a string: int string")},
 		{comp: "==", a: 1, b: 2, result: false, err: nil},
 		{comp: "==", a: 1, b: 1, result: true, err: nil},
-		{comp: "=", a: "a", b: "b", result: false, err: nil},
-		{comp: "=", a: "a", b: "a", result: true, err: nil},
-		{comp: "=", a: "a", b: 2, result: nil, err: errors.New("error running comparison: only one side of comparison was a string: string int")},
-		{comp: "=", a: 2, b: "a", result: nil, err: errors.New("error running comparison: only one side of comparison was a string: int string")},
-		{comp: "=", a: 1, b: 2, result: false, err: nil},
-		{comp: "=", a: 1, b: 1, result: true, err: nil},
 
 		{comp: "£", a: 1, b: 1, result: nil, err: errors.New("error running comparison: unrecognised op: £")},
 	}
@@ -171,7 +165,6 @@ func TestComparisonString(t *testing.T) {
 		{comp: "^", result: "2^6"},
 		{comp: "<", result: "2 < 6"},
 		{comp: ">", result: "2 > 6"},
-		{comp: "=", result: "2 = 6"},
 		{comp: "==", result: "2 == 6"},
 		{comp: "||", result: "2 || 6"},
 		{comp: "&&", result: "2 && 6"},

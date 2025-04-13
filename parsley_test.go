@@ -18,11 +18,11 @@ func TestParse(t *testing.T) {
 	}{
 		{
 			name:           "basic addition",
-			input:          "1+1",
+			input:          "1+2",
 			data:           map[string]any{},
 			expectedBool:   toPtr(true),
-			expectedAny:    float64(2),
-			expectedString: "2",
+			expectedAny:    float64(3),
+			expectedString: "3",
 		},
 		{
 			name:           "basic subtraction",
@@ -180,6 +180,14 @@ func TestParse(t *testing.T) {
 			name:           "less than",
 			input:          `1 < 2`,
 			data:           map[string]any{},
+			expectedBool:   toPtr(true),
+			expectedAny:    true,
+			expectedString: "true",
+		},
+		{
+			name:           "less than",
+			input:          `foo < 2`,
+			data:           map[string]any{"foo": 1.5},
 			expectedBool:   toPtr(true),
 			expectedAny:    true,
 			expectedString: "true",

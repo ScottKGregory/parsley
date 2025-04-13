@@ -49,7 +49,7 @@ func (n *BinaryNode) Eval(data map[string]any) (any, error) {
 // String returns the string representation
 func (n *BinaryNode) String() string {
 	f := "%s%s%s"
-	if n.op == "<" || n.op == ">" || n.op == "=" || n.op == "==" || n.op == "||" || n.op == "&&" {
+	if n.op == "<" || n.op == ">" || n.op == "==" || n.op == "||" || n.op == "&&" {
 		f = "%s %s %s"
 	}
 
@@ -84,7 +84,7 @@ func Calculate(op string, a, b any) (any, error) {
 			return strings.Compare(x, y) < 0, nil
 		case ">":
 			return strings.Compare(x, y) > 0, nil
-		case "=", "==":
+		case "==":
 			return x == y, nil
 		}
 	}
@@ -108,7 +108,7 @@ func Calculate(op string, a, b any) (any, error) {
 		return aa < bb, nil
 	case ">":
 		return aa > bb, nil
-	case "=", "==":
+	case "==":
 		return aa == bb, nil
 	case "+":
 		return aa + bb, nil

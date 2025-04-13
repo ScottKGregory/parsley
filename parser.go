@@ -17,12 +17,7 @@ func parse(str string) (nodes.Node, error) {
 		return nil, err
 	}
 
-	return parseTokens(t)
-}
-
-func parseTokens(tokenizer *tokenizer) (nodes.Node, error) {
-	parser := parser{tokenizer}
-	return parser.parseExpression()
+	return (&parser{t}).parseExpression()
 }
 
 func (p *parser) parseExpression() (nodes.Node, error) {
@@ -50,10 +45,8 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 		// Work out the operator
 		var op string
 		switch p.tokenizer.Token {
-		case add:
-			op = "+"
-		case subtract:
-			op = "-"
+		case "+", "-":
+			op = p.tokenizer.Token
 		}
 
 		// Binary operator found?
@@ -89,22 +82,8 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 		// Work out the operator
 		var op string
 		switch p.tokenizer.Token {
-		case multiply:
-			op = "*"
-		case divide:
-			op = "/"
-		case power:
-			op = "^"
-		case equal:
-			op = "=="
-		case greaterThan:
-			op = ">"
-		case lessThan:
-			op = "<"
-		case and:
-			op = "&&"
-		case or:
-			op = "||"
+		case "*", "/", "^", "==", "=", ">", "<", "&&", "&", "||", "|":
+			op = p.tokenizer.Token
 		}
 
 		// Binary operator found?
@@ -116,14 +95,6 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 		err = p.tokenizer.NextToken()
 		if err != nil {
 			return nil, err
-		}
-
-		// Skip second equals
-		if p.tokenizer.Token == equal || p.tokenizer.Token == and || p.tokenizer.Token == or {
-			err = p.tokenizer.NextToken()
-			if err != nil {
-				return nil, err
-			}
 		}
 
 		// Parse the right hand side of the expression
@@ -139,7 +110,7 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 
 func (p *parser) parseUnary() (nodes.Node, error) {
 	// Positive operator is a no-op so just skip it
-	if p.tokenizer.Token == add {
+	if p.tokenizer.Token == "+" {
 		// Skip
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -149,7 +120,7 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 	}
 
 	// Negative operator
-	if p.tokenizer.Token == subtract {
+	if p.tokenizer.Token == "-" {
 		// Skip
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -164,7 +135,7 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		}
 
 		// Create unary node
-		return nodes.NewUnaryNode(right, "-"), nil
+		return nodes.NewUnaryNode(right, p.tokenizer.Token), nil
 	}
 
 	// No positive/negative operator so parse a leaf node
@@ -183,7 +154,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 	}
 
 	// Parenthesis?
-	if p.tokenizer.Token == openParens {
+	if p.tokenizer.Token == "(" {
 		// Skip '('
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -197,7 +168,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 		}
 
 		// Check and skip ')'
-		if p.tokenizer.Token != closeParens {
+		if p.tokenizer.Token != ")" {
 			return nil, errors.New("missing close parenthesis")
 		}
 
@@ -212,7 +183,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 
 	// Quotes?
 	// TODO: This does not allow for escaping quotes
-	if p.tokenizer.Token == quote {
+	if p.tokenizer.Token == `"` {
 		// Skip '"'
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -229,7 +200,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			s += p.tokenizer.Identifier
 
 			// Check and skip '"'
-			if p.tokenizer.Token == quote {
+			if p.tokenizer.Token == `"` {
 				err := p.tokenizer.NextToken()
 				if err != nil {
 					return nil, err
@@ -249,7 +220,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 		}
 
 		// Parens indicate a function call, otherwise just a variable
-		if p.tokenizer.Token == openParens {
+		if p.tokenizer.Token == "(" {
 			// Function call
 
 			// Skip parens
@@ -270,7 +241,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 				arguments = append(arguments, n)
 
 				// Is there another argument?
-				if p.tokenizer.Token == comma {
+				if p.tokenizer.Token == "," {
 					err = p.tokenizer.NextToken()
 					if err != nil {
 						return nil, err
@@ -283,7 +254,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			}
 
 			// Check and skip ')'
-			if p.tokenizer.Token != closeParens {
+			if p.tokenizer.Token != ")" {
 				return nil, errors.New("missing close parenthesis")
 			}
 
