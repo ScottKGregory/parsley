@@ -68,8 +68,11 @@ func newRegistry() *registry {
 				arr := args[0].([]any)
 				for _, v := range arr {
 					match, err := nodes.Calculate("==", v.(map[string]any)[args[1].(string)], args[2])
-					if match.(bool) || err != nil {
-						return match, fmt.Errorf("error calling function contains_any: %w", err)
+					if err != nil {
+						return false, fmt.Errorf("error calling function contains_any: %w", err)
+					}
+					if match.(bool) {
+						return match, nil
 					}
 				}
 
