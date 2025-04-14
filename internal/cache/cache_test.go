@@ -32,10 +32,10 @@ func TestNoOpCacheGet(t *testing.T) {
 	assert.Nil(t, node)
 }
 
-func TestNoOpCacheSet(t *testing.T) {
+func TestNoOpCacheSet(_ *testing.T) {
 	NewNoOpCache().Set("key", nodes.NewNumberNode(12))
 }
 
-func TestNoOpCacheClose(t *testing.T) {
+func TestNoOpCacheClose(_ *testing.T) {
 	NewNoOpCache().Close()
 }

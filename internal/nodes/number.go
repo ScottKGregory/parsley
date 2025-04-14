@@ -19,8 +19,13 @@ func NewNumberNode(number any) *NumberNode {
 }
 
 // Eval runs the appropriate logic to evaluate the node and produce a single result
-func (n *NumberNode) Eval(data map[string]any) (any, error) {
-	return helpers.ToFloat64(n.Number)
+func (n *NumberNode) Eval(_ map[string]any) (any, error) {
+	ret, err := helpers.ToFloat64(n.Number)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrNodeEvalFailed, err)
+	}
+
+	return ret, nil
 }
 
 // String returns the string representation

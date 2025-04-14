@@ -1,30 +1,29 @@
-// Package parser is a tokenizer/parser to evaluate matcher config
-package parser
+package parsley
 
 import (
 	"errors"
 	"fmt"
+	"maps"
 
+	"github.com/scottkgregory/parsley/internal/helpers"
 	"github.com/scottkgregory/parsley/internal/nodes"
-	"github.com/scottkgregory/parsley/internal/operations"
 )
+
+// ErrFunctionNotFound is returned when an unrecognised function is found
+const ErrFunctionNotFound = helpers.ConstError("function not found")
 
 type parser struct {
 	tokenizer *tokenizer
+	reg       *registry
 }
 
-func Parse(str string) (nodes.Node, error) {
-	t, err := newTokenizer(str)
+func parse(str string, reg *registry) (nodes.Node, error) {
+	t, err := newTokenizer(str, reg)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseTokens(t)
-}
-
-func parseTokens(tokenizer *tokenizer) (nodes.Node, error) {
-	parser := parser{tokenizer}
-	return parser.parseExpression()
+	return (&parser{t, reg}).parseExpression()
 }
 
 func (p *parser) parseExpression() (nodes.Node, error) {
@@ -50,16 +49,21 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 
 	for {
 		// Work out the operator
-		var op nodes.BinaryNodeOp
+		var op string
 		switch p.tokenizer.Token {
-		case add:
-			op = &operations.ComparisonOperation{Comparator: "+"}
-		case subtract:
-			op = &operations.ComparisonOperation{Comparator: "-"}
+		case "+", "-":
+			op = p.tokenizer.Token
+		}
+
+		var mapKey string
+		for k := range maps.Keys(p.reg.binaryNodes) {
+			if k == p.tokenizer.Token {
+				mapKey = k
+			}
 		}
 
 		// Binary operator found?
-		if op == nil {
+		if op == "" && mapKey == "" {
 			return left, nil
 		}
 
@@ -76,7 +80,11 @@ func (p *parser) parseAddSubtract() (nodes.Node, error) {
 		}
 
 		// Create a binary node and use it as the left-hand side from now on
-		left = nodes.NewBinaryNode(left, right, op)
+		if n, ok := p.reg.binaryNodes[mapKey]; ok {
+			left = n(left, right)
+		} else {
+			left = nodes.NewBinaryNode(left, right, op)
+		}
 	}
 }
 
@@ -89,28 +97,14 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 
 	for {
 		// Work out the operator
-		var op nodes.BinaryNodeOp
+		var op string
 		switch p.tokenizer.Token {
-		case multiply:
-			op = &operations.ComparisonOperation{Comparator: "*"}
-		case divide:
-			op = &operations.ComparisonOperation{Comparator: "/"}
-		case power:
-			op = &operations.ComparisonOperation{Comparator: "^"}
-		case equal:
-			op = &operations.ComparisonOperation{Comparator: "=="}
-		case greaterThan:
-			op = &operations.ComparisonOperation{Comparator: ">"}
-		case lessThan:
-			op = &operations.ComparisonOperation{Comparator: "<"}
-		case and:
-			op = &operations.ComparisonOperation{Comparator: "&&"}
-		case or:
-			op = &operations.ComparisonOperation{Comparator: "||"}
+		case "*", "/", "^", "==", "=", ">", "<", "&&", "&", "||", "|":
+			op = p.tokenizer.Token
 		}
 
 		// Binary operator found?
-		if op == nil {
+		if op == "" {
 			return left, nil
 		}
 
@@ -120,28 +114,19 @@ func (p *parser) parseMultiplyDivide() (nodes.Node, error) {
 			return nil, err
 		}
 
-		// Skip second equals
-		if p.tokenizer.Token == equal || p.tokenizer.Token == and || p.tokenizer.Token == or {
-			err = p.tokenizer.NextToken()
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		// Parse the right hand side of the expression
 		var right, err = p.parseUnary()
 		if err != nil {
 			return nil, err
 		}
 
-		// Create a binary node and use it as the left-hand side from now on
 		left = nodes.NewBinaryNode(left, right, op)
 	}
 }
 
 func (p *parser) parseUnary() (nodes.Node, error) {
 	// Positive operator is a no-op so just skip it
-	if p.tokenizer.Token == add {
+	if p.tokenizer.Token == "+" {
 		// Skip
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -150,8 +135,15 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		return p.parseUnary()
 	}
 
+	var mapKey string
+	for k := range maps.Keys(p.reg.unaryNodes) {
+		if k == p.tokenizer.Token {
+			mapKey = k
+		}
+	}
+
 	// Negative operator
-	if p.tokenizer.Token == subtract {
+	if p.tokenizer.Token == "-" || mapKey != "" {
 		// Skip
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -159,14 +151,17 @@ func (p *parser) parseUnary() (nodes.Node, error) {
 		}
 
 		// Parse right
-		// Note p recurses to self to support negative of a negative
 		right, err := p.parseUnary()
 		if err != nil {
 			return nil, err
 		}
 
+		if n, ok := p.reg.unaryNodes[mapKey]; ok {
+			return n(right), nil
+		}
+
 		// Create unary node
-		return nodes.NewUnaryNode(right, &operations.NegateOperation{}), nil
+		return nodes.NewUnaryNode(right, "-"), nil
 	}
 
 	// No positive/negative operator so parse a leaf node
@@ -185,7 +180,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 	}
 
 	// Parenthesis?
-	if p.tokenizer.Token == openParens {
+	if p.tokenizer.Token == "(" {
 		// Skip '('
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -199,7 +194,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 		}
 
 		// Check and skip ')'
-		if p.tokenizer.Token != closeParens {
+		if p.tokenizer.Token != ")" {
 			return nil, errors.New("missing close parenthesis")
 		}
 
@@ -214,7 +209,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 
 	// Quotes?
 	// TODO: This does not allow for escaping quotes
-	if p.tokenizer.Token == quote {
+	if p.tokenizer.Token == `"` {
 		// Skip '"'
 		err := p.tokenizer.NextToken()
 		if err != nil {
@@ -231,7 +226,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			s += p.tokenizer.Identifier
 
 			// Check and skip '"'
-			if p.tokenizer.Token == quote {
+			if p.tokenizer.Token == `"` {
 				err := p.tokenizer.NextToken()
 				if err != nil {
 					return nil, err
@@ -251,7 +246,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 		}
 
 		// Parens indicate a function call, otherwise just a variable
-		if p.tokenizer.Token == openParens {
+		if p.tokenizer.Token == "(" {
 			// Function call
 
 			// Skip parens
@@ -272,7 +267,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 				arguments = append(arguments, n)
 
 				// Is there another argument?
-				if p.tokenizer.Token == comma {
+				if p.tokenizer.Token == "," {
 					err = p.tokenizer.NextToken()
 					if err != nil {
 						return nil, err
@@ -285,7 +280,7 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 			}
 
 			// Check and skip ')'
-			if p.tokenizer.Token != closeParens {
+			if p.tokenizer.Token != ")" {
 				return nil, errors.New("missing close parenthesis")
 			}
 
@@ -294,8 +289,13 @@ func (p *parser) parseLeaf() (nodes.Node, error) {
 				return nil, err
 			}
 
+			fun, ok := p.reg.functions[name]
+			if !ok {
+				return nil, fmt.Errorf("%w: %s", ErrFunctionNotFound, name)
+			}
+
 			// Create the function call node
-			return nodes.NewFunctionNode(name, arguments...), nil
+			return nodes.NewFunctionNode(fun, name, arguments...), nil
 		}
 
 		return nodes.NewVariableNode(name), nil

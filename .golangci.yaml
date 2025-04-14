@@ -1,0 +1,34 @@
+version: "2"
+linters:
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - decorder
+    - errorlint
+    - exhaustive
+    - goconst
+    - gocritic
+    - lll
+    - makezero
+    - mirror
+    - misspell
+    - revive
+    - staticcheck
+    - wrapcheck
+  settings:
+    lll:
+      line-length: 180
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - goconst
+        path: _test\.go
+      - source: "sb.writeRune"
+        linters:
+          - errcheck
+
+formatters:
+  exclusions:
+    generated: lax

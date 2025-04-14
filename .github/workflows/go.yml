@@ -26,14 +26,14 @@ jobs:
       - name: Test
         run: go test -v ./...
 
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7.0.0
+
       - name: Test coverage
         id: coverage
         run: |
-          go test -coverprofile=coverage.out ./...
-          awk '!/_test.go/' coverage.out > temp && mv temp coverage.out
-          awk '!/_mock.go/' coverage.out > temp && mv temp coverage.out
-          awk '!/internal\/assert/' coverage.out > temp && mv temp coverage.out
-          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+          chmod +x cover.sh
+          coverage=$(cover.sh | grep total | awk '{print substr($3, 1, length($3)-1)}')
           echo "total_coverage=$coverage" >> "$GITHUB_OUTPUT"
           if (( $(echo "$coverage < 80" | bc -l) )); then
           echo "Coverage ($coverage%) is below the threshold (80%)"
