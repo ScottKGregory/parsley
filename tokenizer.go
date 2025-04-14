@@ -37,9 +37,9 @@ func newTokenizer(str string, reg *registry) (*tokenizer, error) {
 		maxKnowTokenLen: len(slices.MaxFunc(reg.knownTokens, func(x, y string) int {
 			if len(x) > len(y) {
 				return len(x)
-			} else {
-				return len(y)
 			}
+
+			return len(y)
 		})),
 		reg: reg,
 	}
@@ -75,7 +75,7 @@ func (t *tokenizer) NextToken() (err error) {
 
 				return false
 			}) {
-				t.Token = t.Token + string(t.currentRune)
+				t.Token += string(t.currentRune)
 				t.NextRune()
 			}
 		}

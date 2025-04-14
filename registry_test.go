@@ -10,7 +10,7 @@ import (
 func TestRegisterUnary(t *testing.T) {
 	parser, err := NewParser(false)
 	assert.Nil(t, err)
-	parser.RegisterUnaryNode("£", func(right nodes.Node) nodes.Node { return &testNode{} })
+	parser.RegisterUnaryNode("£", func(_ nodes.Node) nodes.Node { return &testNode{} })
 
 	actual, err := parser.ParseAsAny("£14", nil)
 	assert.Equal(t, 12, actual)
@@ -22,7 +22,7 @@ func TestRegisterUnary(t *testing.T) {
 func TestRegisterBinary(t *testing.T) {
 	parser, err := NewParser(false)
 	assert.Nil(t, err)
-	parser.RegisterBinaryNode("£", func(left, right nodes.Node) nodes.Node { return &testNode{} })
+	parser.RegisterBinaryNode("£", func(_, _ nodes.Node) nodes.Node { return &testNode{} })
 
 	actual, err := parser.ParseAsAny("1£4", nil)
 	assert.Equal(t, 12, actual)
@@ -69,7 +69,7 @@ func TestRegiserFunction(t *testing.T) {
 type testNode struct{}
 
 // Eval implements nodes.Node.
-func (t *testNode) Eval(data map[string]any) (any, error) {
+func (t *testNode) Eval(_ map[string]any) (any, error) {
 	return 12, nil
 }
 

@@ -100,16 +100,17 @@ func TestTokenizer(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.input, func(tt *testing.T) {
 			tok, err := newTokenizer(tc.input, newRegistry())
-			assert.Equal(t, nil, err)
+			assert.Equal(tt, nil, err)
 
 			toks := []string{}
 			for tok.Token != eof {
 				toks = append(toks, tok.Token)
-				tok.NextToken()
+				err := tok.NextToken()
+				assert.ErrorEqual(tt, nil, err)
 			}
 			toks = append(toks, tok.Token)
 
-			assert.Equal(t, tc.tokens, toks)
+			assert.Equal(tt, tc.tokens, toks)
 		})
 	}
 }

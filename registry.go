@@ -10,7 +10,11 @@ import (
 
 // Function defines the shape of a function that can be called inside an expression
 type Function func(args ...any) (any, error)
+
+// UnaryNodeFunc is a constructor for a unary node
 type UnaryNodeFunc func(right nodes.Node) nodes.Node
+
+// BinaryNodeFunc is a constructor for a binary node
 type BinaryNodeFunc func(left, right nodes.Node) nodes.Node
 type registry struct {
 	knownTokens []string
@@ -65,7 +69,7 @@ func newRegistry() *registry {
 				for _, v := range arr {
 					match, err := nodes.Calculate("==", v.(map[string]any)[args[1].(string)], args[2])
 					if match.(bool) || err != nil {
-						return match, err
+						return match, fmt.Errorf("error calling function contains_any: %w", err)
 					}
 				}
 
@@ -75,11 +79,13 @@ func newRegistry() *registry {
 	}
 }
 
+// RegisterUnaryNode adds a new unary node to the registry
 func (p *Parser) RegisterUnaryNode(token string, fun UnaryNodeFunc) {
 	p.Registry.knownTokens = append(p.Registry.knownTokens, token)
 	p.Registry.unaryNodes[token] = fun
 }
 
+// RegisterBinaryNode adds a new binary node to the registry
 func (p *Parser) RegisterBinaryNode(token string, fun BinaryNodeFunc) {
 	p.Registry.knownTokens = append(p.Registry.knownTokens, token)
 	p.Registry.binaryNodes[token] = fun
