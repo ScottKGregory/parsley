@@ -47,6 +47,11 @@ func (m *Parser) ParseAsString(str string, data map[string]any) (string, error) 
 	return parseAs(m, str, data, helpers.ToString)
 }
 
+// ParseAsFloat will parse and evaluate the expression provided. Returning the result as a float64
+func (m *Parser) ParseAsFloat(str string, data map[string]any) (float64, error) {
+	return parseAs(m, str, data, helpers.ToFloat64)
+}
+
 // ParseAsAny will parse and evaluate the expression provided. Returning the result as a whichever type is most appropriate
 func (m *Parser) ParseAsAny(str string, data map[string]any) (any, error) {
 	return parseAs(m, str, data, func(e any) (any, error) { return e, nil })
@@ -71,3 +76,25 @@ func parseAs[T any](m *Parser, str string, data map[string]any, converter func(e
 
 	return converter(val)
 }
+
+// ErrCacheSetup is returned when setting up the cache fails
+const ErrCacheSetup = cache.ErrCacheSetup
+
+// ErrComparisonFailed is returned when the comparison of two values fails
+const ErrComparisonFailed = nodes.ErrComparisonFailed
+
+// ErrNodeEvalFailed is returned when a node failed to evaluate correctly
+const ErrNodeEvalFailed = nodes.ErrNodeEvalFailed
+
+// TypesMatch check if the types of the two values are the same
+func TypesMatch(a, b any) bool { return helpers.TypesMatch(a, b) }
+
+// ToFloat64 attempts to convert the input value in to a float64. It will cast int/uint/flaot types, and attempt to parse strings as floats
+func ToFloat64(input any) (float64, error) { return helpers.ToFloat64(input) }
+
+// ToBool converts the input value in to a bool.
+//
+// - If the type is a number then any value over 0 will return true
+// - Strings will be checked against known values
+// - Strings not matching a known value will attempt to parse as a float
+func ToBool(e any) (bool, error) { return helpers.ToBool(e) }
