@@ -8,14 +8,17 @@ import (
 	"github.com/scottkgregory/parsley/internal/nodes"
 )
 
+// Node defines the interface for new nodes to adhere
+type Node = nodes.Node
+
 // Function defines the shape of a function that can be called inside an expression
 type Function func(args ...any) (any, error)
 
 // UnaryNodeFunc is a constructor for a unary node
-type UnaryNodeFunc func(right nodes.Node) nodes.Node
+type UnaryNodeFunc func(right Node) Node
 
 // BinaryNodeFunc is a constructor for a binary node
-type BinaryNodeFunc func(left, right nodes.Node) nodes.Node
+type BinaryNodeFunc func(left, right Node) Node
 type registry struct {
 	knownTokens []string
 	unaryNodes  map[string]UnaryNodeFunc
