@@ -296,6 +296,14 @@ func TestParse(t *testing.T) {
 			expectedAny:    "opened",
 			expectedString: "opened",
 		},
+		{
+			name:           "equal, no data",
+			input:          `event_type == "merge_request"`,
+			data:           map[string]any{},
+			expectedBool:   toPtr(false),
+			expectedAny:    false,
+			expectedString: "false",
+		},
 	}
 
 	for _, tc := range testCases {

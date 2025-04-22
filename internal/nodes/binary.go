@@ -78,6 +78,16 @@ func Calculate(op string, a, b any) (any, error) {
 
 	x, aOk := a.(string)
 	y, bOk := b.(string)
+
+	if aOk && b == nil {
+		b = ""
+		bOk = true
+	}
+	if bOk && a == nil {
+		a = ""
+		aOk = true
+	}
+
 	if aOk && bOk {
 		switch op {
 		case "<":
