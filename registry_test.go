@@ -1,6 +1,7 @@
 package parsley
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/scottkgregory/parsley/internal/assert"
@@ -51,6 +52,26 @@ func TestRegiserFunction(t *testing.T) {
 		{"round", nil, []any{"2.1"}, nil, float64(2), "round(2.1)"},
 		{"truncate", nil, []any{"2.1"}, nil, float64(2), "truncate(2.1)"},
 		{"absolute", nil, []any{"-2.1"}, nil, 2.1, "absolute(2.1)"},
+		{"contains_any", nil, []any{
+			[]struct{ name string }{{name: "foo"}, {name: "bar"}},
+			"name",
+			"bar",
+		}, fmt.Errorf("First argument to contains_any was not []any"), false, ""},
+		{"contains_any", nil, []any{
+			[]any{map[string]any{"name": "foo"}, map[string]any{"name": "bar"}},
+			"name",
+			"bar",
+		}, nil, true, ""},
+		{"contains_any", nil, []any{
+			[]any{map[string]any{"name": "foo"}, map[string]any{"name": "bar"}},
+			"name",
+			"baz",
+		}, nil, false, ""},
+		{"contains_any", nil, []any{
+			[]any{},
+			"name",
+			"baz",
+		}, nil, false, ""},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -68,9 +68,21 @@ func newRegistry() *registry {
 				return math.Abs(x), nil
 			},
 			"contains_any": func(args ...any) (any, error) {
-				arr := args[0].([]any)
+				if args[0] == nil {
+					return false, nil
+				}
+
+				arg1, ok := args[1].(string)
+				if !ok {
+					return false, fmt.Errorf("Second argument to contains_any was nil")
+				}
+
+				arr, ok := args[0].([]any)
+				if !ok {
+					return false, fmt.Errorf("First argument to contains_any was not []any")
+				}
 				for _, v := range arr {
-					match, err := nodes.Calculate("==", v.(map[string]any)[args[1].(string)], args[2])
+					match, err := nodes.Calculate("==", v.(map[string]any)[arg1], args[2])
 					if err != nil {
 						return false, fmt.Errorf("error calling function contains_any: %w", err)
 					}
