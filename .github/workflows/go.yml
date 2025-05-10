@@ -27,7 +27,7 @@ jobs:
         run: go test -v ./...
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v7.0.0
+        uses: golangci/golangci-lint-action@v7.0.1
 
       - name: Test coverage
         id: coverage
