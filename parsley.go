@@ -90,11 +90,11 @@ const ErrNodeEvalFailed = nodes.ErrNodeEvalFailed
 func TypesMatch(a, b any) bool { return helpers.TypesMatch(a, b) }
 
 // ToFloat64 attempts to convert the input value in to a float64. It will cast int/uint/flaot types, and attempt to parse strings as floats
-func ToFloat64(input any) (float64, error) { return helpers.ToFloat64(input) }
+func ToFloat64(input any) (float64, error) { return helpers.ToFloat64(input) } //nolint:wrapcheck // Error does not need to be wrapped here
 
 // ToBool converts the input value in to a bool.
 //
 // - If the type is a number then any value over 0 will return true
 // - Strings will be checked against known values
 // - Strings not matching a known value will attempt to parse as a float
-func ToBool(e any) (bool, error) { return helpers.ToBool(e) }
+func ToBool(e any) (bool, error) { return helpers.ToBool(e) } //nolint:wrapcheck // Error does not need to be wrapped here

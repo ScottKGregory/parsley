@@ -56,7 +56,7 @@ func TestRegiserFunction(t *testing.T) {
 			[]struct{ name string }{{name: "foo"}, {name: "bar"}},
 			"name",
 			"bar",
-		}, fmt.Errorf("First argument to contains_any was not []any"), false, ""},
+		}, fmt.Errorf("first argument to contains_any was not []any"), false, ""},
 		{"contains_any", nil, []any{
 			[]any{map[string]any{"name": "foo"}, map[string]any{"name": "bar"}},
 			"name",
