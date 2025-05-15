@@ -74,12 +74,12 @@ func newRegistry() *registry {
 
 				arg1, ok := args[1].(string)
 				if !ok {
-					return false, fmt.Errorf("Second argument to contains_any was nil")
+					return false, fmt.Errorf("second argument to contains_any was nil")
 				}
 
 				arr, ok := args[0].([]any)
 				if !ok {
-					return false, fmt.Errorf("First argument to contains_any was not []any")
+					return false, fmt.Errorf("first argument to contains_any was not []any")
 				}
 				for _, v := range arr {
 					match, err := nodes.Calculate("==", v.(map[string]any)[arg1], args[2])
