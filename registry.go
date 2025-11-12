@@ -93,6 +93,10 @@ func newRegistry() *registry {
 
 				return false, nil
 			},
+			"not": func(args ...any) (any, error) {
+				a := args[0].(bool)
+				return !a, nil
+			},
 		},
 	}
 }

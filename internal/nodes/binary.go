@@ -90,6 +90,8 @@ func Calculate(op string, a, b any) (any, error) {
 
 	if aOk && bOk {
 		switch op {
+		case "+":
+			return x + y, nil
 		case "<":
 			return strings.Compare(x, y) < 0, nil
 		case ">":
